@@ -1,0 +1,115 @@
+html, body, #app
+  margin 0
+  background-color var(--md-sys-color-surface)
+
+#app
+  font-family var(--font-family)
+  -webkit-font-smoothing antialiased
+  -moz-osx-font-smoothing grayscale
+  text-align center
+  color var(--md-sys-color-primary)
+  background-color var(--md-sys-color-surface)
+
+body
+  --font-family Avenir, Helvetica, Arial, sans-serif
+  --navbar-height 56px
+
+  --md-sys-color-primary: rgb(167 211 148);
+  --md-sys-color-surface-tint: rgb(167 211 148);
+  --md-sys-color-on-primary: rgb(20 56 10);
+  --md-sys-color-primary-container: rgb(42 79 31);
+  --md-sys-color-on-primary-container: rgb(194 239 174);
+  --md-sys-color-secondary: rgb(188 203 177);
+  --md-sys-color-on-secondary: rgb(39 52 33);
+  --md-sys-color-secondary-container: rgb(61 75 54);
+  --md-sys-color-on-secondary-container: rgb(216 231 204);
+  --md-sys-color-tertiary: rgb(160 207 209);
+  --md-sys-color-on-tertiary: rgb(0 55 57);
+  --md-sys-color-tertiary-container: rgb(30 78 80);
+  --md-sys-color-on-tertiary-container: rgb(188 235 237);
+  --md-sys-color-error: rgb(255 180 171);
+  --md-sys-color-on-error: rgb(105 0 5);
+  --md-sys-color-error-container: rgb(147 0 10);
+  --md-sys-color-on-error-container: rgb(255 218 214);
+  --md-sys-color-background: rgb(17 20 15);
+  --md-sys-color-on-background: rgb(225 228 218);
+  --md-sys-color-surface: rgb(17 20 15);
+  --md-sys-color-on-surface: rgb(225 228 218);
+  --md-sys-color-surface-variant: rgb(67 72 63);
+  --md-sys-color-on-surface-variant: rgb(195 200 188);
+  --md-sys-color-outline: rgb(141 147 135);
+  --md-sys-color-outline-variant: rgb(67 72 63);
+  --md-sys-color-shadow: rgb(0 0 0);
+  --md-sys-color-scrim: rgb(0 0 0);
+  --md-sys-color-inverse-surface: rgb(225 228 218);
+  --md-sys-color-inverse-on-surface: rgb(46 50 43);
+  --md-sys-color-inverse-primary: rgb(65 104 52);
+  --md-sys-color-primary-fixed: rgb(194 239 174);
+  --md-sys-color-on-primary-fixed: rgb(3 33 0);
+  --md-sys-color-primary-fixed-dim: rgb(167 211 148);
+  --md-sys-color-on-primary-fixed-variant: rgb(42 79 31);
+  --md-sys-color-secondary-fixed: rgb(216 231 204);
+  --md-sys-color-on-secondary-fixed: rgb(18 31 14);
+  --md-sys-color-secondary-fixed-dim: rgb(188 203 177);
+  --md-sys-color-on-secondary-fixed-variant: rgb(61 75 54);
+  --md-sys-color-tertiary-fixed: rgb(188 235 237);
+  --md-sys-color-on-tertiary-fixed: rgb(0 32 33);
+  --md-sys-color-tertiary-fixed-dim: rgb(160 207 209);
+  --md-sys-color-on-tertiary-fixed-variant: rgb(30 78 80);
+  --md-sys-color-surface-dim: rgb(17 20 15);
+  --md-sys-color-surface-bright: rgb(55 58 51);
+  --md-sys-color-surface-container-lowest: rgb(12 15 10);
+  --md-sys-color-surface-container-low: rgb(25 29 23);
+  --md-sys-color-surface-container: rgb(29 33 27);
+  --md-sys-color-surface-container-high: rgb(39 43 37);
+  --md-sys-color-surface-container-highest: rgb(50 54 47);
+
+  --md-sys-fontsize-headline-small 20px
+  --md-sys-fontsize-headline-medium 22px
+  --md-sys-fontsize-headline-large 26px
+  --md-sys-fontsize-title-large 18px
+  --md-sys-fontsize-title-medium 13px
+  --md-sys-fontsize-title-small 12px
+  --md-sys-fontsize-body-medium 14px
+  --md-sys-fontsize-label-large 14px
+
+  --md-icon-font: "Material Symbols Rounded"
+  --md-text-button-label-text-type: 600 1rem/1.25rem var(--font-family)
+  --md-ref-typeface-plain: var(--font-family)
+  --md-outlined-text-field-container-shape: 12px
+
+body
+  scrollbar-color: var(--md-sys-color-primary)
+
+  &::-webkit-scrollbar:vertical,
+  .bordered-scrollbar::-webkit-scrollbar
+    width: calc(var(--scrollbar-width, 4px) + 4px)
+
+  &::-webkit-scrollbar:horizontal,
+  .bordered-scrollbar::-webkit-scrollbar:horizontal
+    height: calc(var(--scrollbar-width, 4px) + 4px)
+
+  &::-webkit-scrollbar-thumb,
+  .bordered-scrollbar::-webkit-scrollbar-thumb
+    border: 4px solid transparent
+    background-clip: content-box
+
+::-webkit-scrollbar
+  width: var(--scrollbar-width, 4px)
+  &:horizontal
+    height: var(--scrollbar-width, 4px)
+
+::-webkit-scrollbar-thumb
+  border-radius: 9999px;
+  background-color: var(--md-sys-color-primary)
+
+@media (max-width: 400px)
+  body
+    --scrollbar-width: 4px
+    &::-webkit-scrollbar:vertical,
+    .bordered-scrollbar::-webkit-scrollbar:vertical
+      width: calc(var(--scrollbar-width, 4px) + 4px)
+
+    &::-webkit-scrollbar-thumb:vertical,
+    .bordered-scrollbar::-webkit-scrollbar-thumb:vertical
+      border-width: 2px
