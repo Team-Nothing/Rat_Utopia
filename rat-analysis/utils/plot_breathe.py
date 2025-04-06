@@ -10,7 +10,7 @@ from scipy.interpolate import interp1d, PchipInterpolator
 from scipy.signal import find_peaks
 from torchvision import transforms
 
-RECORD_PATH = "data/records"
+RECORD_PATH = "../data/records"
 RECORD_ID = "20241123_121043"
 
 PLOT = True
