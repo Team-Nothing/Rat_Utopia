@@ -151,7 +151,7 @@ export default defineComponent({
   name: 'RecordView',
   components: {ComboBox, LineChart},
   setup() {
-    const recordService = new RecordService("http://localhost:8000")
+    const recordService = new RecordService("http://localhost:8080")
 
     const durationRef = ref(5)
     const recordDurations = {
@@ -441,14 +441,18 @@ export default defineComponent({
   grid-template-columns 1fr 1fr
   gap 24px
   padding 24px
+  box-sizing border-box
+  overflow hidden
 
   .xdd
     margin-block auto
+    max-height 100%
+    overflow hidden
     .actions-container
       width 100%
-      height fit-content
+      height 100%
       display flex
-      overflow-y scroll
+      overflow-y auto
       align-items center
 
       .actions
@@ -477,7 +481,7 @@ export default defineComponent({
             gap: 4px
             justify-content: start
             align-items start
-            overflow-y scroll
+            overflow-y auto
             button
               padding 4px
               border none
@@ -517,9 +521,11 @@ export default defineComponent({
     display flex
     flex-direction column
     text-align center
-
-    gap 4px
+    gap 8px
     justify-content center
+    align-items center
+    max-height 100%
+    overflow-y auto
 
     .line-chart
       aspect-ratio 8 / 3.5
@@ -529,10 +535,19 @@ export default defineComponent({
 
     span
       font-weight 600
-    .video-container img
-      width: 100%
-      aspect-ratio 8/3
-      border-radius 16px
+      margin 4px 0
+      
+    .video-container 
+      width 100%
+      display flex
+      justify-content center
+      align-items center
+      
+      img
+        width: 100%
+        aspect-ratio 8/3
+        border-radius 16px
+        object-fit contain
 
 @media (max-width: 720px)
   .main

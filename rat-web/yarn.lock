@@ -564,6 +564,13 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node22/-/node22-22.0.0.tgz#0bdaf702f2b7594383d24d7b2b8d557dcfdca1ed"
   integrity sha512-twLQ77zevtxobBOD4ToAtVmuYrpeYUh3qh+TEp+08IWhpsrIflVHqQ1F1CiPxQGL7doCdBIOOCF+1Tm833faNg==
 
+"@types/chartjs-plugin-annotation@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/chartjs-plugin-annotation/-/chartjs-plugin-annotation-1.0.0.tgz#67ed339b0a06137e1a7b3d75daa9aa9ddec97f3c"
+  integrity sha512-cNr/1yNOiTpJKlHtk1ds9I+KGgTKlvxt2mauhpBvsJ1ukkXpTX0uAp7igjmHab2JsOBN83RqbQe8t5+YJBHu8A==
+  dependencies:
+    chartjs-plugin-annotation "*"
+
 "@types/estree@1.0.6", "@types/estree@^1.0.0":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.6.tgz#628effeeae2064a1b4e79f78e81d87b7e5fc7b50"
@@ -878,6 +885,11 @@ chart.js@^4.4.6:
   integrity sha512-8Y406zevUPbbIBA/HRk33khEmQPk5+cxeflWE/2rx1NJsjVWMPw/9mSP9rxHP5eqi6LNoPBVMfZHxbwLSgldYA==
   dependencies:
     "@kurkle/color" "^0.3.0"
+
+chartjs-plugin-annotation@*, chartjs-plugin-annotation@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/chartjs-plugin-annotation/-/chartjs-plugin-annotation-3.1.0.tgz#0b3910862bde232344bbb6cf998633f71db7b093"
+  integrity sha512-EkAed6/ycXD/7n0ShrlT1T2Hm3acnbFhgkIEJLa0X+M6S16x0zwj1Fv4suv/2bwayCT3jGPdAtI9uLcAMToaQQ==
 
 color-convert@^2.0.1:
   version "2.0.1"

@@ -8,7 +8,7 @@
     </md-outlined-button>
     <div v-if="showItems" class="dropdown-list">
       <ul>
-        <li v-for="(item, i) in items" :key="i" @click="_onSelectedChange(i)" >
+        <li v-for="(item, i) in items" :key="i" @click="handleSelectedChange(i)" >
           {{ item }}
         </li>
       </ul>
@@ -37,15 +37,15 @@ export default defineComponent({
     const currIndex = ref(props.default ?? 0)
     const showItems = ref(false)
 
-    const comboBoxRef = ref(null)
+    const comboBoxRef = ref<HTMLElement | null>(null)
 
-    const handleClickOutside = (event) => {
-      if (comboBoxRef.value && !comboBoxRef.value.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (comboBoxRef.value && !comboBoxRef.value.contains(event.target as Node)) {
         showItems.value = false
       }
     }
 
-    const _onSelectedChange = (index: number) => {
+    const handleSelectedChange = (index: number) => {
       currIndex.value = index
       if (props.onSelectedChange) {
         props.onSelectedChange(index)
@@ -67,7 +67,7 @@ export default defineComponent({
         }
     );
 
-    return { currIndex, showItems, comboBoxRef, _onSelectedChange };
+    return { currIndex, showItems, comboBoxRef, handleSelectedChange };
   }
 })
 

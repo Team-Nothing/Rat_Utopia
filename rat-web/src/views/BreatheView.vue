@@ -55,7 +55,7 @@
         <div class="container secondary">
           <div class="sub-container">
             <span style="padding-inline: 16px">Frame-size:</span>
-            <combo-box default="2" :items="['1 sec', '2 sec', '5 sec', '10sec', '20sec', '30sec']"></combo-box>
+            <combo-box :default="2" :items="['1 sec', '2 sec', '5 sec', '10sec', '20sec', '30sec']"></combo-box>
           </div>
           <div class="sub-container">
             <label class="check-container">
@@ -96,8 +96,6 @@
       <div class="line-chart" ref="chartContainer">
         <line-chart
             :key="chartKey"
-            :width="chartWidth"
-            :height="chartHeight"
             :chart-data="chartData"
             :options="chartOptions"
         />
@@ -110,9 +108,10 @@
 import {computed, defineComponent, ref, onMounted, type Ref} from "vue";
 import { LineChart } from "vue-chart-3";
 import { Chart, registerables } from "chart.js";
+import type { ChartData, ChartOptions, LineControllerDatasetOptions, ChartDataset } from 'chart.js';
 import ComboBox from "@/components/ComboBox.vue";
 import RecordService from "@/service/record/RecordService";
-import _default from "chart.js/dist/core/core.interaction";
+// import _default from "chart.js/dist/core/core.interaction"; // Removed unused/incorrect import
 
 Chart.register(...registerables);
 Chart.defaults.backgroundColor = "#bec2ff";
@@ -124,16 +123,16 @@ export default defineComponent({
   components: {ComboBox, LineChart },
   setup() {
 
-    const recordService = new RecordService("http://localhost:8000")
+    const recordService = new RecordService("http://localhost:8080")
 
-    const records: Ref<Array<string>|null> = ref(null)
+    const records: Ref<Array<string> | null> = ref(null)
     const recordSelected = ref(-1)
-    const videoSrc = ref(null)
+    const videoSrc: Ref<string | null> = ref(null) // Added string type
     const videoPlayer = ref<HTMLVideoElement | null>(null);
     const currentTime = ref(0); // Current playback time in seconds
     const duration = ref(0); // Total duration of the video
     const isPlaying = ref(false)
-    const slider = ref<HTMLElement | null>(null);
+    const slider = ref<HTMLInputElement | null>(null); // Use HTMLInputElement for slider with value
 
     // Computed property for formatted time (mm:ss:ms)
     const formattedTime = computed(() => {
@@ -149,9 +148,24 @@ export default defineComponent({
     });
 
     // Play the video
-    const playVideo = () => {
-      videoPlayer.value?.play();
-      isPlaying.value = true;
+    const playVideo = async () => { // Make async to handle promise
+      if (videoPlayer.value) {
+        try {
+          await videoPlayer.value.play();
+          isPlaying.value = true;
+        } catch (error: any) {
+          // Ignore AbortError which can happen if pause() or load() is called quickly after play()
+          if (error.name === 'AbortError') {
+            console.warn('Video play() request was interrupted (likely by pause() or load()).');
+            // Ensure isPlaying is false if play was aborted
+            isPlaying.value = false;
+          } else {
+            // Handle other potential errors
+            console.error("Error playing video:", error);
+            isPlaying.value = false;
+          }
+        }
+      }
     };
 
     // Pause the video
@@ -161,19 +175,22 @@ export default defineComponent({
     };
 
     // Update currentTime when the slider value changes
-    const onSliderChange = () => {
-      const sliderValue = slider.value?.value; // Access the slider's value directly
-      if (sliderValue) {
-        currentTime.value = sliderValue;
-        videoPlayer.value.currentTime = sliderValue
-        sendChartConfig()
+    const onSliderChange = (event: Event) => { // Accept event
+      const target = event.target as HTMLInputElement; // Cast target
+      const sliderValue = target?.value; // Access the slider's value directly
+      if (sliderValue && videoPlayer.value) { // Check videoPlayer null
+        const numericValue = parseFloat(sliderValue);
+        currentTime.value = numericValue;
+        videoPlayer.value.currentTime = numericValue
+        sendChartConfig() // Assuming this needs rect info
       }
     };
 
     // Sync slider with the video's current playback time
-    const handleTimeUpdate = (event) => {
+    const handleTimeUpdate = (event: Event) => { // Add Event type
       if (videoPlayer.value) {
-        currentTime.value = event.target.currentTime;
+        const target = event.target as HTMLVideoElement;
+        currentTime.value = target.currentTime;
       }
     };
 
@@ -191,17 +208,17 @@ export default defineComponent({
       records.value = result
     })
 
-    const chartContainer = ref(null);
-    const chartHeight = ref("auto");
-    const chartWidth = ref("auto");
+    const chartContainer = ref<HTMLDivElement | null>(null); // Type the ref
     const chartKey = ref(0);
 
     const chartSocket = ref<WebSocket | null>(null); // WebSocket reference
-    const chartLabels = ref([])
+    const chartLabels = ref<number[]>([]); // Assuming labels are numbers (time)
 
-    const onRecordSelected = (index) => {
+    const onRecordSelected = (index: number) => { // Add number type
       recordSelected.value = index;
-      videoSrc.value = "http://localhost:8000/breathe/video-stream/" + records.value[index]
+      if (records.value) { // Add null check
+          videoSrc.value = "http://localhost:8000/breathe/video-stream/" + records.value[index]
+      }
       isPlaying.value = false;
       if (videoPlayer.value) {
         videoPlayer.value.load();
@@ -211,38 +228,43 @@ export default defineComponent({
         }
 
         setTimeout(() => {
-          const recordId = records.value[index];
-          chartSocket.value = new WebSocket(`ws://localhost:8000/breathe/square-rgb-steam/${recordId}`);
-          chartSocket.value.onopen = () => {
-            console.log("WebSocket connected to square_rgb_steam endpoint");
-            sendChartConfig()
-          };
+          if (records.value) { // Add null check
+              const recordId = records.value[index];
+              chartSocket.value = new WebSocket(`ws://localhost:8000/breathe/square-rgb-steam/${recordId}`);
+              chartSocket.value.onopen = () => {
+                console.log("WebSocket connected to square_rgb_steam endpoint");
+                sendChartConfig() // Send initial config on connect
+              };
 
-          chartSocket.value.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+              chartSocket.value.onmessage = (event) => {
+                const data = JSON.parse(event.data);
 
-            if (data.error) {
-              console.error("WebSocket error:", data.error);
-              return;
-            }
+                if (data.error) {
+                  console.error("WebSocket error:", data.error);
+                  return;
+                }
 
-            chartLabels.value = data.time
-            datasets.value.r.data = data.mean_r;
-            datasets.value.g.data = data.mean_g;
-            datasets.value.b.data = data.mean_b;
-            datasets.value.all.data = data.mean_all;
+                // Assuming data structure matches:
+                chartLabels.value = data.time || [];
+                datasets.value.r.data = data.mean_r || [];
+                datasets.value.g.data = data.mean_g || [];
+                datasets.value.b.data = data.mean_b || [];
+                datasets.value.all.data = data.mean_all || [];
 
-            sendChartConfig()
-          };
+                chartKey.value++; // Trigger chart update
+              };
 
-          chartSocket.value.onclose = () => {
-            console.log("WebSocket connection closed");
-          };
+              chartSocket.value.onclose = () => {
+                console.log("WebSocket connection closed");
+              };
 
-          chartSocket.value.onerror = (error) => {
-            console.error("WebSocket error:", error);
-          };
-        }, 500)
+              chartSocket.value.onerror = (error) => {
+                console.error("WebSocket error:", error);
+              };
+          } else {
+              console.error("Cannot establish WebSocket connection: records not loaded.")
+          }
+        }, 500) // Delay slightly to allow video loading initiation
       }
     }
 
@@ -259,18 +281,21 @@ export default defineComponent({
     }
 
     // Toggle states for r, g, b, and all
-    const toggleStates = ref({
+    const toggleStates = ref<Record<DatasetKey, boolean>>({
       r: true,
       g: true,
       b: true,
       all: true,
     });
 
-    // Original dataset
-    const datasets = ref({
+    // Define a type for the dataset keys
+    type DatasetKey = 'r' | 'g' | 'b' | 'all';
+
+    // Define the datasets ref with explicit Chart.js typing
+    const datasets = ref<Record<DatasetKey, ChartDataset<'line', number[]>>> ({
       r: {
         label: "r",
-        data: [],
+        data: [] as number[],
         borderColor: "rgb(255 218 214)",
         backgroundColor: "rgb(147 0 10)",
         fill: false,
@@ -279,7 +304,7 @@ export default defineComponent({
       },
       g: {
         label: "g",
-        data: [],
+        data: [] as number[],
         borderColor: "rgb(194 239 174)",
         backgroundColor: "rgb(42 79 31)",
         fill: false,
@@ -288,7 +313,7 @@ export default defineComponent({
       },
       b: {
         label: "b",
-        data: [],
+        data: [] as number[],
         borderColor: "rgb(160 207 209)",
         backgroundColor: "rgb(0 55 57)",
         fill: false,
@@ -297,7 +322,7 @@ export default defineComponent({
       },
       all: {
         label: "all",
-        data: [],
+        data: [] as number[],
         borderColor: "rgb(127 127 127)",
         backgroundColor: "rgb(25 25 25)",
         fill: false,
@@ -306,31 +331,30 @@ export default defineComponent({
       },
     });
 
-    // Reactive chartData
-    const chartData = computed(() => {
-      setTimeout(() => {
-        chartKey.value += 1
-      }, 25)
+    // Reactive chartData - Should now be correctly typed due to the datasets ref typing
+    const chartData = computed((): ChartData<'line', number[]> => {
+      const activeKeys = Object.keys(datasets.value) as DatasetKey[];
       return {
         labels: chartLabels.value,
-        datasets: Object.keys(datasets.value)
+        datasets: activeKeys
             .filter((key) => toggleStates.value[key])
-            .map((key) => datasets.value[key]),
+            .map((key) => datasets.value[key]), // Map result type now matches expectation
       }
     });
 
-    // Chart options
-    const chartOptions = {
-      responsive: false,
+    // Chart options - Explicit type
+    const chartOptions: ChartOptions<'line'> = {
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         title: {
           display: false,
         },
         legend: {
           labels: {
-            font: {
-              size: 0,
-            },
+            // font: { // Font settings removed for brevity, add if needed
+            //   size: 0,
+            // },
           },
         },
       },
@@ -341,17 +365,17 @@ export default defineComponent({
         x: {
           display: true,
           ticks: {
-            font: {
-              size: 12,
-            },
+            // font: { // Font settings removed
+            //   size: 12,
+            // },
           },
         },
         y: {
           display: true,
           ticks: {
-            font: {
-              size: 12,
-            },
+            // font: { // Font settings removed
+            //   size: 12,
+            // },
           },
           suggestedMin: 0,
           suggestedMax: 1,
@@ -361,15 +385,17 @@ export default defineComponent({
     };
 
     // Handle toggling datasets
-    const toggleDataset = (key, event) => {
-      toggleStates.value[key] = event.target.checked;
+    const toggleDataset = (key: DatasetKey, event: Event) => { // Add types
+        const target = event.target as HTMLInputElement; // Type assertion
+        toggleStates.value[key] = target.checked; // Indexing is now type-safe
     };
 
     const updateChartDimensions = () => {
       if (chartContainer.value) {
-        chartWidth.value = `${chartContainer.value.offsetWidth}px`;
-        chartHeight.value = `${chartContainer.value.offsetHeight}px`;
-        chartKey.value += 1; // Force re-render
+        // Don't set width/height directly, let responsive: true handle it
+        // chartWidth.value = `${chartContainer.value.offsetWidth}px`;
+        // chartHeight.value = `${chartContainer.value.offsetHeight}px`;
+        chartKey.value += 1; // Force re-render if needed after dimension changes handled by chart.js
       }
     };
 
@@ -572,8 +598,6 @@ export default defineComponent({
       chartOptions,
       chartData,
       chartContainer,
-      chartWidth,
-      chartHeight,
       chartKey,
       toggleDataset,
       records,
@@ -606,13 +630,16 @@ export default defineComponent({
 <style lang="stylus" scoped>
 .left-right
   display flex
-  grid-template-columns auto auto
   justify-content center
+  height 100%
+  overflow hidden
 
   .left
-    height calc(100vh - 48px)
+    height 100%
     display flex
     align-items center
+    padding-right 16px
+    box-sizing border-box
     .record-container
       display flex
       flex-direction column;
@@ -620,7 +647,8 @@ export default defineComponent({
       background var(--md-sys-color-secondary-container)
       color var(--md-sys-color-on-secondary-container)
       border-radius 24px
-      height 50vh
+      max-height 90%
+      min-height 300px
       gap 16px
       width 300px
       .list
@@ -631,7 +659,7 @@ export default defineComponent({
         flex-direction column
         padding 8px
         gap 8px
-        overflow-y scroll
+        overflow-y auto
         .selected
           background var(--md-sys-color-secondary)
           color var(--md-sys-color-on-secondary)
@@ -648,22 +676,23 @@ export default defineComponent({
         font-weight 600
         margin-block 24px
         font-size var(--md-sys-fontsize-headline-medium)
+        flex-shrink 0
   .main
     display grid
-    width fit-content
-    grid-template-rows 1fr auto 1fr
-
-    flex-direction column
-    height calc(100vh - 48px)
+    width 100%
+    grid-template-rows minmax(300px, 1fr) auto minmax(300px, 1fr)
+    height 100%
     padding 24px
     gap 16px
-    justify-content center
+    box-sizing border-box
+    overflow hidden
+
     .video-container
       border 1px solid var(--md-sys-color-secondary)
       border-radius 16px
-      aspect-ratio 8/3
-      position: relative
+      position relative
       display flex
+      min-height 0
       .rectangle
         position: absolute
         border: 2px solid var(--md-sys-color-error)
@@ -711,6 +740,7 @@ export default defineComponent({
       display flex
       flex-direction column
       gap 8px
+      flex-shrink 0
       .primary
         background var(--md-sys-color-primary-container)
         color var(--md-sys-color-on-primary-container)
@@ -737,5 +767,9 @@ export default defineComponent({
           .check-container
             display flex
             align-items center
-
+    .line-chart
+      position relative
+      min-height 0
+      height 100%
+      width 100%
 </style>

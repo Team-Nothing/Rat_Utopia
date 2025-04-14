@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import RecordView from "@/views/RecordView.vue";
 import HomeView from "@/views/HomeView.vue";
 import BreatheView from "@/views/BreatheView.vue";
+import HeartRateView from '../views/HeartRateView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,10 @@ const router = createRouter({
       path: '/breathe',
       name: 'breathe',
       component: BreatheView,
+    }, {
+      path: '/heart-rate',
+      name: 'heart-rate',
+      component: HeartRateView,
     },
   ],
 })
