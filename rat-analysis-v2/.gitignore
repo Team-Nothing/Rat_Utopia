@@ -1,0 +1,16 @@
+data
+!data/processed/put_proceed_data_or_generate_it.txt
+!data/raw/put_raw_data.txt
+
+train/saves
+train/tb_logs
+
+.idea
+.venv
+
+dataset/test
+
+results.png
+
+__pycache__
+plot_outputs
